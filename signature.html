@@ -1,34 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/signature_pad@5.0.4/dist/signature_pad.umd.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Signature Pad</title>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@5.0.4/dist/signature_pad.umd.min.js"></script>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        padding: 10px;
+        font-family: Arial, sans-serif;
+        background: #fff;
+    }
+
+    #wrapper {
+        width: 100%;
+    }
+
+    #signature-pad {
+        width: 100%;
+        height: 220px;
+        border: 2px solid #ccc;
+        border-radius: 6px;
+        touch-action: none;
+        background: white;
+    }
+
+    .buttons {
+        margin-top: 10px;
+    }
+
+    button {
+        padding: 8px 16px;
+        cursor: pointer;
+    }
+</style>
 </head>
 
 <body>
-  <canvas id="pad" style="border:1px solid #000;width:100%;height:200px;"></canvas>
-  <button onclick="clearPad()">Clear</button>
-  <button onclick="savePad()">Save</button>
 
-  <script>
-    const canvas = document.getElementById('pad');
-    canvas.width = 500;
-    canvas.height = 200;
+<div id="wrapper">
 
-    const pad = new SignaturePad(canvas);
+    <canvas id="signature-pad"></canvas>
 
-    function clearPad() {
-      pad.clear();
+    <div class="buttons">
+        <button id="clear">Clear</button>
+    </div>
+
+</div>
+
+<script>
+    const canvas = document.getElementById('signature-pad');
+
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = 220 * ratio;
+
+        canvas.getContext("2d").scale(ratio, ratio);
+
+        if (window.signaturePad) {
+            window.signaturePad.clear();
+        }
     }
 
-    function savePad() {
-      const data = pad.toDataURL();
+    resizeCanvas();
 
-      // send to parent form
-      window.parent.postMessage({
-        type: "signature",
-        value: data
-      }, "*");
+    const signaturePad = new SignaturePad(canvas, {
+        minWidth: 1,
+        maxWidth: 2.5
+    });
+
+    window.signaturePad = signaturePad;
+
+    function sendSignature() {
+        if (signaturePad.isEmpty()) return;
+
+        const data = signaturePad.toDataURL("image/png");
+
+        window.parent.postMessage({
+            type: "signature",
+            value: data
+        }, "*");
     }
-  </script>
+
+    // Send automatically when drawing ends
+    signaturePad.addEventListener("endStroke", sendSignature);
+
+    // Clear button
+    document.getElementById("clear")
+        .addEventListener("click", function() {
+
+            signaturePad.clear();
+
+            window.parent.postMessage({
+                type: "signature",
+                value: ""
+            }, "*");
+        });
+
+    // Handle screen resize
+    window.addEventListener("resize", resizeCanvas);
+</script>
+
 </body>
 </html>
