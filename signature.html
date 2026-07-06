@@ -91,18 +91,6 @@
     // Send automatically when drawing ends
     signaturePad.addEventListener("endStroke", sendSignature);
 
-    // Clear button
-    document.getElementById("clear")
-        .addEventListener("click", function() {
-
-            signaturePad.clear();
-
-            window.parent.postMessage({
-                type: "signature",
-                value: ""
-            }, "*");
-        });
-
     // Handle screen resize
     window.addEventListener("resize", resizeCanvas);
 </script>
