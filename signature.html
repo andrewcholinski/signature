@@ -111,7 +111,7 @@ async function uploadSignature() {
         // Send URL back to FormCrafts
         window.parent.postMessage({
             type: "signature",
-            value: <img src="' + imageUrl + '" width="250">
+            value: result.secure_url
         }, "*");
 
     }
